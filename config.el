@@ -83,3 +83,5 @@
          ("<tab>" . 'copilot-accept-completion)
          ("TAB" . 'copilot-accept-completion))
   :config (setq copilot-node-executable "~/.nvm/versions/node/v17.9.1/bin/node"))
+
+(add-hook! org-mode 'org-fragtog-mode)
