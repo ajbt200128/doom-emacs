@@ -85,3 +85,12 @@
   :config (setq copilot-node-executable "~/.nvm/versions/node/v17.9.1/bin/node"))
 
 (add-hook! org-mode 'org-fragtog-mode)
+
+(after! lsp-mode
+  (setq lsp-progress-function 'lsp-on-progress-legacy)
+  (setq lsp-semgrep-trace-server "verbose"))
+
+(setq lsp-log-io t)
+
+;; File templates
+(set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)

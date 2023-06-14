@@ -1,0 +1,6 @@
+# -*- mode: snippet -*-
+# name: multiline
+# key: (*
+# --
+(*
+ * $0
