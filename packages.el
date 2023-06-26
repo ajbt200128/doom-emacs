@@ -55,3 +55,5 @@
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
 
 (package! org-fragtog)
+
+(package! magit-delta)

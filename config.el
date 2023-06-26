@@ -92,5 +92,8 @@
 
 (setq lsp-log-io t)
 
+(use-package! magit-delta
+  :hook (magit-mode . magit-delta-mode))
+
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
