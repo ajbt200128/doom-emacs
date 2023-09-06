@@ -95,5 +95,23 @@
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
 
+(add-hook 'tuareg-mode-hook
+          (lambda()
+            (setq-local comment-style 'multi-line)
+            ))
+
+(use-package! dap-mode
+  :hook (lsp-mode . dap-mode)
+  :config (setq dap-auto-configure-features '(sessions locals breakpoints expressions)))
+
+(after! doom-themes-ext-treemacs
+  (with-eval-after-load 'treemacs
+    (remove-hook 'treemacs-mode-hook #'doom-themes-hide-fringes-maybe)
+    (advice-remove #'treemacs-select-window #'doom-themes-hide-fringes-maybe)))
+
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
+
+
+(map! :leader "w ]" #'+evil/next-frame)
+(map! :leader "w [" #'+evil/previous-frame)
