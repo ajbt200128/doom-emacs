@@ -90,7 +90,7 @@
   (setq lsp-progress-function 'lsp-on-progress-legacy)
   (setq lsp-semgrep-trace-server "verbose"))
 
-(setq lsp-log-io t)
+(setq vterm-timer-delay 0.0001)
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
@@ -112,6 +112,20 @@
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
 
+(add-hook! 'prog-mode-hook 'ace-window-display-mode)
+(mapc (lambda (x)
+        (let ((key (car x))
+              (val (cdr x)))
+          (map! :leader :desc (format "Switch to window ") :n (format "w %s" key)
+                (lambda ()
+                  (interactive)
+                  (let ((wnd (nth val (aw-window-list))))
+                    (when wnd
+                      (select-window wnd)
+                      (select-frame-set-input-focus (selected-frame))))))))
+      '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
+        ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
 
-(map! :leader "w ]" #'+evil/next-frame)
-(map! :leader "w [" #'+evil/previous-frame)
+(map! :leader :n "w ]" #'+evil/next-frame)
+(map! :leader :n "w [" #'+evil/previous-frame)
+(map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
