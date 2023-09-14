@@ -126,6 +126,23 @@
       '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
         ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
 
-(map! :leader :n "w ]" #'+evil/next-frame)
-(map! :leader :n "w [" #'+evil/previous-frame)
+(setq aw-background nil)
+
+(map! :leader :desc "Run a command in Kitty" :n "k r" #'+kitty/run)
+(map! :leader :desc "Run region as command in Kitty" :n "k R" #'+kitty/send-region)
+(map! :leader :desc "Rerun a command in Kitty" :n "k k" #'+kitty/rerun)
+(map! :leader :desc "Run a a command in a new Kitty window" :n "k n" #'+kitty/run-in-new-window)
+(map! :leader :desc "Run a command in a new Kitty tab" :n "k t" #'+kitty/run-in-new-tab)
+(map! :leader :desc "Run a command in a new Kitty OS window" :n "k o" #'+kitty/run-in-new-os-window)
+(map! :leader :desc "Launch a new Kitty window" :n "k N" #'+kitty/new-window)
+(map! :leader :desc "Launch a new Kitty tab" :n "k T" #'+kitty/new-window)
+(map! :leader :desc "Launch a new Kitty OS window" :n "k O" #'+kitty/launch)
+(map! :leader :desc "CD to a directory in Kitty" :n "k c" #'+kitty/cd)
+(map! :leader :desc "CD to current directory in Kitty" :n "k d" #'+kitty/cd-to-here)
+(map! :leader :desc "CD to project root in Kitty" :n "k p" #'+kitty/cd-to-project)
+
+(map! :leader :desc "Next Frame" :n "w ]" #'+evil/next-frame)
+(map! :leader :desc "Previous Frame" :n "w [" #'+evil/previous-frame)
+(map! :leader :desc "Ace Window" :n "w a" #'ace-window)
+
 (map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
