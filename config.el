@@ -88,9 +88,10 @@
 
 (after! lsp-mode
   (setq lsp-progress-function 'lsp-on-progress-legacy)
-  (setq lsp-semgrep-trace-server "verbose"))
+  (setq lsp-idle-delay 0.1)
+  (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls))))
 
-(setq vterm-timer-delay 0.0001)
+(setq vterm-timer-delay 0.001)
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
