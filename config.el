@@ -34,6 +34,8 @@
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-city-lights)
 
+(setq doom-big-font-increment 3)
+
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
@@ -86,7 +88,8 @@
 
 (add-hook! org-mode 'org-fragtog-mode)
 
-(after! lsp-mode
+(use-package! lsp-mode
+  :config
   (setq lsp-progress-function 'lsp-on-progress-legacy)
   (setq lsp-idle-delay 0.1)
   (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls))))
@@ -96,19 +99,23 @@
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
 
-(add-hook 'tuareg-mode-hook
-          (lambda()
-            (setq-local comment-style 'multi-line)
-            ))
+(use-package! tuareg
+  :init (require 'dap-ocaml))
 
 (use-package! dap-mode
   :hook (lsp-mode . dap-mode)
-  :config (setq dap-auto-configure-features '(sessions locals breakpoints expressions)))
+  :config
+  (setq dap-auto-configure-features '(sessions locals breakpoints))
+  (dap-ui-controls-mode 0))
+
 
 (after! doom-themes-ext-treemacs
   (with-eval-after-load 'treemacs
     (remove-hook 'treemacs-mode-hook #'doom-themes-hide-fringes-maybe)
     (advice-remove #'treemacs-select-window #'doom-themes-hide-fringes-maybe)))
+
+(after! dap-mode
+  (advice-add 'dap-ui-controls-mode :override #'ignore))
 
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
@@ -145,5 +152,20 @@
 (map! :leader :desc "Next Frame" :n "w ]" #'+evil/next-frame)
 (map! :leader :desc "Previous Frame" :n "w [" #'+evil/previous-frame)
 (map! :leader :desc "Ace Window" :n "w a" #'ace-window)
+
+(map! :leader :desc "DAP Debug" :n "d d" #'dap-debug)
+(map! :leader :desc "DAP Disconnect" :n "d D" #'dap-disconnect)
+(map! :leader :desc "DAP Toggle Breakpoint" :n "d b" #'dap-breakpoint-toggle)
+(map! :leader :desc "DAP Step In" :n "d i" #'dap-step-in)
+(map! :leader :desc "DAP Step Out" :n "d O" #'dap-step-out)
+(map! :leader :desc "DAP Step Over" :n "d o" #'dap-next)
+(map! :leader :desc "DAP Restart" :n "d r" #'dap-debug-restart)
+(map! :leader :desc "DAP Debug Last" :n "d l" #'dap-debug-last)
+(map! :leader :desc "DAP Continue" :n "d c" #'dap-continue)
+(map! :leader :desc "DAP Breakpoint Condition" :n "d C" #'dap-breakpoint-condition)
+(map! :leader :desc "DAP UI Show" :n "d u" #'dap-ui-show-many-windows)
+(map! :leader :desc "DAP UI Hide" :n "d U" #'dap-ui-hide-many-windows)
+
+
 
 (map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
