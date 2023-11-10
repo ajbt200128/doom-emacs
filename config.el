@@ -77,6 +77,10 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 ;; accept completion from copilot and fallback to company
+
+;;
+;; Package stuff
+;;
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
@@ -91,8 +95,8 @@
 (use-package! lsp-mode
   :config
   (setq lsp-progress-function 'lsp-on-progress-legacy)
-  (setq lsp-idle-delay 0.1)
-  (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls))))
+  (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls)))
+  (setq lsp-semgrep-scan-jobs 10))
 
 (setq vterm-timer-delay 0.001)
 
@@ -108,6 +112,18 @@
   (setq dap-auto-configure-features '(sessions locals breakpoints))
   (dap-ui-controls-mode 0))
 
+(use-package! jsonnet-mode
+  :defer t
+  :config
+  (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?})))
+
+(use-package! ace-window
+  :config
+  (setq aw-background nil))
+
+;;
+;; after stuff
+;;
 
 (after! doom-themes-ext-treemacs
   (with-eval-after-load 'treemacs
@@ -117,6 +133,9 @@
 (after! dap-mode
   (advice-add 'dap-ui-controls-mode :override #'ignore))
 
+
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
 
@@ -134,8 +153,27 @@
       '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
         ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
 
-(setq aw-background nil)
+;;
+;; custom functions
+;;
 
+(defun gpg-sign-string (message)
+  (shell-command-to-string
+   (format "echo \"%s\" | gpg --clearsign -o-" message))
+  )
+
+(defun gpg-sign-comment (start end)
+  (interactive "r")
+  (let ((comment (buffer-substring-no-properties start end)))
+    (delete-region start end)
+    (insert (gpg-sign-string comment)))
+  )
+
+;;
+;; keybindings
+;;
+
+;; kitty
 (map! :leader :desc "Run a command in Kitty" :n "k r" #'+kitty/run)
 (map! :leader :desc "Run region as command in Kitty" :n "k R" #'+kitty/send-region)
 (map! :leader :desc "Rerun a command in Kitty" :n "k k" #'+kitty/rerun)
@@ -149,10 +187,12 @@
 (map! :leader :desc "CD to current directory in Kitty" :n "k d" #'+kitty/cd-to-here)
 (map! :leader :desc "CD to project root in Kitty" :n "k p" #'+kitty/cd-to-project)
 
+;; ace
 (map! :leader :desc "Next Frame" :n "w ]" #'+evil/next-frame)
 (map! :leader :desc "Previous Frame" :n "w [" #'+evil/previous-frame)
 (map! :leader :desc "Ace Window" :n "w a" #'ace-window)
 
+;; dap
 (map! :leader :desc "DAP Debug" :n "d d" #'dap-debug)
 (map! :leader :desc "DAP Disconnect" :n "d D" #'dap-disconnect)
 (map! :leader :desc "DAP Toggle Breakpoint" :n "d b" #'dap-breakpoint-toggle)
@@ -166,6 +206,8 @@
 (map! :leader :desc "DAP UI Show" :n "d u" #'dap-ui-show-many-windows)
 (map! :leader :desc "DAP UI Hide" :n "d U" #'dap-ui-hide-many-windows)
 
-
-
+;; copilot
 (map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
+
+;; gpg
+(map! :leader :desc "Sign region" :n "S" #'gpg-sign-comment)

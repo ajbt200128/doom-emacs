@@ -55,3 +55,7 @@
 (package! org-fragtog)
 
 (package! magit-delta)
+
+(package! exec-path-from-shell)
+
+(package! jsonnet-mode)
