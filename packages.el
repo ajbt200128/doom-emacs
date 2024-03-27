@@ -59,3 +59,9 @@
 (package! exec-path-from-shell)
 
 (package! jsonnet-mode)
+
+(package! protobuf-mode
+  :recipe (:host github :repo "protocolbuffers/protobuf"
+           :files ("editors/protobuf-mode.el")))
+
+(package! vlfi)

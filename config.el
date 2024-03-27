@@ -44,7 +44,23 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
+(add-to-list 'default-frame-alist '(undecorated-round . t))
 
+(setq org-latex-src-block-backend 'minted)
+(setq org-latex-custom-lang-environments
+      '(
+        (emacs-lisp "common-lispcode")
+        ))
+
+(setq org-latex-minted-options
+      '(("frame" "single")
+        ("fontsize" "\\scriptsize")
+        ("linenos" "")))
+
+(setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -81,6 +97,8 @@
 ;;
 ;; Package stuff
 ;;
+(setq ocaml-indent-level 2)
+(setq elisp-indent-level 2)
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
@@ -88,7 +106,14 @@
          :map copilot-completion-map
          ("<tab>" . 'copilot-accept-completion)
          ("TAB" . 'copilot-accept-completion))
-  :config (setq copilot-node-executable "~/.nvm/versions/node/v17.9.1/bin/node"))
+  :config (setq copilot--indentation-alist '(
+                                             (tuareg-mode ocaml-indent-level)
+                                             (emacs-lisp-mode elisp-indent-level))))
+
+(use-package! vlf
+  :config
+  (setq vlf-application 'always))
+
 
 (add-hook! org-mode 'org-fragtog-mode)
 
@@ -211,3 +236,17 @@
 
 ;; gpg
 (map! :leader :desc "Sign region" :n "S" #'gpg-sign-comment)
+
+;; vlf
+(map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf)
+
+;; counsel
+(map! :leader :desc "Ripgrep current directory" :n "s s" #'counsel-rg)
+;; projectile
+(map! :leader :desc "Projectile find and replace" :n "p R" #'projectile-replace)
+
+;; format
+(map! :leader :desc "Format buffer" :n "b f" #'+format/buffer)
+
+;; treemacs
+(map! :leader :desc "Treemacs" :n "f t" #'treemacs)
