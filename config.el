@@ -95,10 +95,16 @@
 ;; accept completion from copilot and fallback to company
 
 ;;
-;; Package stuff
+;; General settings
 ;;
+
 (setq ocaml-indent-level 2)
 (setq elisp-indent-level 2)
+(setq vterm-timer-delay 0.001)
+
+;;
+;; Package stuff
+;;
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
   :bind (("C-TAB" . 'copilot-accept-completion-by-word)
@@ -114,16 +120,11 @@
   :config
   (setq vlf-application 'always))
 
-
-(add-hook! org-mode 'org-fragtog-mode)
-
 (use-package! lsp-mode
   :config
   (setq lsp-progress-function 'lsp-on-progress-legacy)
   (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls)))
   (setq lsp-semgrep-scan-jobs 10))
-
-(setq vterm-timer-delay 0.001)
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
@@ -147,7 +148,7 @@
   (setq aw-background nil))
 
 ;;
-;; after stuff
+;; after/hooks/conditions
 ;;
 
 (after! doom-themes-ext-treemacs
@@ -158,25 +159,17 @@
 (after! dap-mode
   (advice-add 'dap-ui-controls-mode :override #'ignore))
 
+(add-hook! 'prog-mode-hook 'ace-window-display-mode)
+(add-hook! 'prog-mode-hook 'auto-fill-mode)
+
+(add-hook! org-mode 'org-fragtog-mode)
 
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
+
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
 
-(add-hook! 'prog-mode-hook 'ace-window-display-mode)
-(mapc (lambda (x)
-        (let ((key (car x))
-              (val (cdr x)))
-          (map! :leader :desc (format "Switch to window ") :n (format "w %s" key)
-                (lambda ()
-                  (interactive)
-                  (let ((wnd (nth val (aw-window-list))))
-                    (when wnd
-                      (select-window wnd)
-                      (select-frame-set-input-focus (selected-frame))))))))
-      '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
-        ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
 
 ;;
 ;; custom functions
@@ -194,9 +187,25 @@
     (insert (gpg-sign-string comment)))
   )
 
+
 ;;
 ;; keybindings
 ;;
+
+;; window switching
+(mapc (lambda (x)
+        (let ((key (car x))
+              (val (cdr x)))
+          (map! :leader :desc (format "Switch to window ") :n (format "w %s" key)
+                (lambda ()
+                  (interactive)
+                  (let ((wnd (nth val (aw-window-list))))
+                    (when wnd
+                      (select-window wnd)
+                      (select-frame-set-input-focus (selected-frame))))))))
+      '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
+        ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
+
 
 ;; kitty
 (map! :leader :desc "Run a command in Kitty" :n "k r" #'+kitty/run)
