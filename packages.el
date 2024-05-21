@@ -65,3 +65,4 @@
            :files ("editors/protobuf-mode.el")))
 
 (package! vlfi)
+(package! nickel-mode)
