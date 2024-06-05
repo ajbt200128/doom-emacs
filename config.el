@@ -124,7 +124,8 @@
   :config
   (setq lsp-progress-function 'lsp-on-progress-legacy)
   (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls)))
-  (setq lsp-semgrep-scan-jobs 10))
+  (setq lsp-semgrep-scan-jobs 10)
+  (setq lsp-rust-features "all"))
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
@@ -167,9 +168,9 @@
 (when (memq window-system '(mac ns x))
   (exec-path-from-shell-initialize))
 
+
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
-
 
 ;;
 ;; custom functions
