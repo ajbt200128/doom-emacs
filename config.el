@@ -101,6 +101,7 @@
 (setq ocaml-indent-level 2)
 (setq elisp-indent-level 2)
 (setq vterm-timer-delay 0.001)
+(setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'dune-mode))
 
 ;;
 ;; Package stuff
@@ -129,6 +130,10 @@
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
+
+(use-package! poetry
+  :config
+  (setq poetry-tracking-strategy 'projectile))
 
 (use-package! tuareg
   :init (require 'dap-ocaml))
