@@ -40,27 +40,9 @@
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type 'relative)
 
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
 
 (add-to-list 'default-frame-alist '(undecorated-round . t))
 
-(setq org-latex-src-block-backend 'minted)
-(setq org-latex-custom-lang-environments
-      '(
-        (emacs-lisp "common-lispcode")
-        ))
-
-(setq org-latex-minted-options
-      '(("frame" "single")
-        ("fontsize" "\\scriptsize")
-        ("linenos" "")))
-
-(setq org-latex-pdf-process
-      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -98,24 +80,102 @@
 ;; General settings
 ;;
 
-(setq ocaml-indent-level 2)
-(setq elisp-indent-level 2)
 (setq vterm-timer-delay 0.001)
 (setq +format-on-save-disabled-modes (add-to-list '+format-on-save-disabled-modes 'dune-mode))
 
 ;;
 ;; Package stuff
 ;;
+(use-package! org
+  :config
+  (setq org-directory "~/org/"
+        org-default-notes-file "~/org/agenda/refile.org"
+        org-capture-templates
+        '(("t" "TODO" entry (file "~/org/agenda/refile.org")
+           "* TODO %? %^G\n%T")))
+  (setq org-agenda-files '("~/org/agenda")
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-deadline-if-done t
+        org-agenda-include-deadlines t
+        org-agenda-block-separator nil
+        org-agenda-compact-blocks t
+        org-agenda-start-day nil ;; i.e. today
+        org-agenda-span 1
+        org-agenda-start-on-weekday nil)
+  (setq org-latex-src-block-backend 'minted
+        org-latex-custom-lang-environments
+        '((emacs-lisp "common-lispcode"))
+        org-latex-minted-options
+        '(("frame" "single")
+          ("fontsize" "\\scriptsize")
+          ("linenos" ""))
+        org-latex-pdf-process
+        '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f")))
+
+(use-package! org-super-agenda
+  :after org-agenda
+  :init
+  (setq org-agenda-custom-commands
+        '(("c" "Super view"
+           ((alltodo "" ((org-agenda-overriding-header "")
+                         (org-super-agenda-groups
+                          '(
+                            (:name "Today - Stretch"
+                             :and (:tag "today" :tag "stretch")
+                             :order 2)
+                            (:name "This Week - Stretch"
+                             :and (:tag "thisweek" :tag "stretch")
+                             :order 4)
+                            (:name "Today"
+                             :date today
+                             :tag "today"
+                             :order 1)
+                            (:name "This Week"
+                             :tag "thisweek"
+                             :order 3)
+                            (:name "Anytime"
+                             :tag "anytime"
+                             :order 5)
+                            (:discard (:todo "TODO"))))))
+            (alltodo "" ((org-agenda-overriding-header "")
+                         (org-super-agenda-groups
+                          '((:log t)
+                            (:name "To refile"
+                             :file-path "refile\\.org"
+                             :order 5)
+                            (:name "Due Today"
+                             :deadline today
+                             :order 6)
+                            (:name "Due Soon"
+                             :deadline future
+                             :order 7)
+                            (:name "Overdue"
+                             :deadline past
+                             :order 8)
+                            (:discard (:todo "TODO"))))))))))
+  :config
+  (advice-add 'org-refile :after
+              (lambda (&rest _)
+                (org-save-all-org-buffers)))
+  (map! :leader :desc "Agenda View" :n "a" #'(lambda (&rest _) (interactive)
+                                               (org-agenda nil "c")))
+  (org-super-agenda-mode))
+
+
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
-  :bind (("C-TAB" . 'copilot-accept-completion-by-word)
-         ("C-<tab>" . 'copilot-accept-completion-by-word)
-         :map copilot-completion-map
-         ("<tab>" . 'copilot-accept-completion)
-         ("TAB" . 'copilot-accept-completion))
-  :config (setq copilot--indentation-alist '(
-                                             (tuareg-mode ocaml-indent-level)
-                                             (emacs-lisp-mode elisp-indent-level))))
+  :bind
+  (("C-TAB" . 'copilot-accept-completion-by-word)
+   ("C-<tab>" . 'copilot-accept-completion-by-word)
+   :map copilot-completion-map
+   ("<tab>" . 'copilot-accept-completion)
+   ("TAB" . 'copilot-accept-completion))
+  :config
+  (setq copilot--indentation-alist
+        '((tuareg-mode 2)
+          (emacs-lisp-mode 2))))
 
 (use-package! vlf
   :config
@@ -123,10 +183,10 @@
 
 (use-package! lsp-mode
   :config
-  (setq lsp-progress-function 'lsp-on-progress-legacy)
-  (setq lsp-disabled-clients '((tuareg-mode . semgrep-ls)))
-  (setq lsp-semgrep-scan-jobs 10)
-  (setq lsp-rust-features "all"))
+  (setq lsp-progress-function 'lsp-on-progress-legacy
+        lsp-disabled-clients '((tuareg-mode . semgrep-ls))
+        lsp-semgrep-scan-jobs 10
+        lsp-rust-features "all"))
 
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
@@ -151,7 +211,27 @@
 
 (use-package! ace-window
   :config
-  (setq aw-background nil))
+  (setq aw-background nil)
+  (map! :leader
+        (:prefix ("w" . "window")
+         :desc "Next Frame" "]" #'+evil/next-frame
+         :desc "Previous Frame" "[" #'+evil/previous-frame
+         :desc "Ace Window" "a" #'ace-window))
+  ;; window switching
+  (mapc (lambda (x)
+          (let ((key (car x))
+                (val (cdr x)))
+            (map! :leader :desc (format "Switch to window ") :n (format "w %s" key)
+                  (lambda ()
+                    (interactive)
+                    (let ((wnd (nth val (aw-window-list))))
+                      (when wnd
+                        (select-window wnd)
+                        (select-frame-set-input-focus (selected-frame))))))))
+        '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
+          ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
+  (ace-window-display-mode))
+
 (use-package! vundo
   :config
   ;; Use `HJKL` VIM-like motion, also Home/End to jump around.
@@ -167,7 +247,8 @@
   (define-key vundo-mode-map (kbd "<end>") #'vundo-stem-end)
   (define-key vundo-mode-map (kbd "q") #'vundo-quit)
   (define-key vundo-mode-map (kbd "C-g") #'vundo-quit)
-  (define-key vundo-mode-map (kbd "RET") #'vundo-confirm))
+  (define-key vundo-mode-map (kbd "RET") #'vundo-confirm)
+  (map! :leader :desc "Visualize undo tree" :n "s u" #'vundo))
 ;;
 ;; after/hooks/conditions
 ;;
@@ -179,9 +260,6 @@
 
 (after! dap-mode
   (advice-add 'dap-ui-controls-mode :override #'ignore))
-
-(add-hook! 'prog-mode-hook 'ace-window-display-mode)
-(add-hook! 'prog-mode-hook 'auto-fill-mode)
 
 (add-hook! org-mode 'org-fragtog-mode)
 
@@ -208,58 +286,43 @@
     (insert (gpg-sign-string comment)))
   )
 
-
 ;;
 ;; keybindings
 ;;
 
-;; window switching
-(mapc (lambda (x)
-        (let ((key (car x))
-              (val (cdr x)))
-          (map! :leader :desc (format "Switch to window ") :n (format "w %s" key)
-                (lambda ()
-                  (interactive)
-                  (let ((wnd (nth val (aw-window-list))))
-                    (when wnd
-                      (select-window wnd)
-                      (select-frame-set-input-focus (selected-frame))))))))
-      '(("1" . 0) ("2" . 1) ("3" . 2) ("4" . 3) ("5" . 4)
-        ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
 
 
 ;; kitty
-(map! :leader :desc "Run a command in Kitty" :n "k r" #'+kitty/run)
-(map! :leader :desc "Run region as command in Kitty" :n "k R" #'+kitty/send-region)
-(map! :leader :desc "Rerun a command in Kitty" :n "k k" #'+kitty/rerun)
-(map! :leader :desc "Run a a command in a new Kitty window" :n "k n" #'+kitty/run-in-new-window)
-(map! :leader :desc "Run a command in a new Kitty tab" :n "k t" #'+kitty/run-in-new-tab)
-(map! :leader :desc "Run a command in a new Kitty OS window" :n "k o" #'+kitty/run-in-new-os-window)
-(map! :leader :desc "Launch a new Kitty window" :n "k N" #'+kitty/new-window)
-(map! :leader :desc "Launch a new Kitty tab" :n "k T" #'+kitty/new-window)
-(map! :leader :desc "Launch a new Kitty OS window" :n "k O" #'+kitty/launch)
-(map! :leader :desc "CD to a directory in Kitty" :n "k c" #'+kitty/cd)
-(map! :leader :desc "CD to current directory in Kitty" :n "k d" #'+kitty/cd-to-here)
-(map! :leader :desc "CD to project root in Kitty" :n "k p" #'+kitty/cd-to-project)
-
-;; ace
-(map! :leader :desc "Next Frame" :n "w ]" #'+evil/next-frame)
-(map! :leader :desc "Previous Frame" :n "w [" #'+evil/previous-frame)
-(map! :leader :desc "Ace Window" :n "w a" #'ace-window)
+(map! :leader
+      (:prefix ("k" . "kitty")
+       :desc "Run a command in Kitty" "r" #'+kitty/run
+       :desc "Run region as command in Kitty" "R" #'+kitty/send-region
+       :desc "Rerun a command in Kitty" "k" #'+kitty/rerun
+       :desc "Run a a command in a new Kitty window" "n" #'+kitty/run-in-new-window
+       :desc "Run a command in a new Kitty tab" "t" #'+kitty/run-in-new-tab
+       :desc "Run a command in a new Kitty OS window" "o" #'+kitty/run-in-new-os-window
+       :desc "Launch a new Kitty window" "N" #'+kitty/new-window
+       :desc "Launch a new Kitty tab" "T" #'+kitty/new-window
+       :desc "Launch a new Kitty OS window" "O" #'+kitty/launch
+       :desc "CD to a directory in Kitty" "c" #'+kitty/cd
+       :desc "CD to current directory in Kitty" "d" #'+kitty/cd-to-here
+       :desc "CD to project root in Kitty" "p" #'+kitty/cd-to-project))
 
 ;; dap
-(map! :leader :desc "DAP Debug" :n "d d" #'dap-debug)
-(map! :leader :desc "DAP Disconnect" :n "d D" #'dap-disconnect)
-(map! :leader :desc "DAP Toggle Breakpoint" :n "d b" #'dap-breakpoint-toggle)
-(map! :leader :desc "DAP Step In" :n "d i" #'dap-step-in)
-(map! :leader :desc "DAP Step Out" :n "d O" #'dap-step-out)
-(map! :leader :desc "DAP Step Over" :n "d o" #'dap-next)
-(map! :leader :desc "DAP Restart" :n "d r" #'dap-debug-restart)
-(map! :leader :desc "DAP Debug Last" :n "d l" #'dap-debug-last)
-(map! :leader :desc "DAP Continue" :n "d c" #'dap-continue)
-(map! :leader :desc "DAP Breakpoint Condition" :n "d C" #'dap-breakpoint-condition)
-(map! :leader :desc "DAP UI Show" :n "d u" #'dap-ui-show-many-windows)
-(map! :leader :desc "DAP UI Hide" :n "d U" #'dap-ui-hide-many-windows)
+(map! :leader
+      (:prefix ("d" . "debug")
+       :desc "DAP Debug" "d" #'dap-debug
+       :desc "DAP Disconnect" "D" #'dap-disconnect
+       :desc "DAP Toggle Breakpoint" "b" #'dap-breakpoint-toggle
+       :desc "DAP Step In" "i" #'dap-step-in
+       :desc "DAP Step Out" "O" #'dap-step-out
+       :desc "DAP Step Over" "o" #'dap-next
+       :desc "DAP Restart" "r" #'dap-debug-restart
+       :desc "DAP Debug Last" "l" #'dap-debug-last
+       :desc "DAP Continue" "c" #'dap-continue
+       :desc "DAP Breakpoint Condition" "C" #'dap-breakpoint-condition
+       :desc "DAP UI Show" "u" #'dap-ui-show-many-windows
+       :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
 
 ;; copilot
 (map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
@@ -272,6 +335,7 @@
 
 ;; counsel
 (map! :leader :desc "Ripgrep current directory" :n "s s" #'counsel-rg)
+
 ;; projectile
 (map! :leader :desc "Projectile find and replace" :n "p R" #'projectile-replace)
 
@@ -280,6 +344,3 @@
 
 ;; treemacs
 (map! :leader :desc "Treemacs" :n "f t" #'treemacs)
-
-;;vundo
-(map! :leader :desc "Visualize undo tree" :n "s u" #'vundo)

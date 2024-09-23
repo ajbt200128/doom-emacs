@@ -69,3 +69,5 @@
 (package! nickel-mode)
 
 (package! vundo)
+
+(package! org-super-agenda)
