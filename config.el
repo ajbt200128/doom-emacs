@@ -138,7 +138,7 @@
                             (:name "Anytime"
                              :tag "anytime"
                              :order 5)
-                            (:discard (:todo "TODO"))))))
+                            (:discard (:anything))))))
             (alltodo "" ((org-agenda-overriding-header "")
                          (org-super-agenda-groups
                           '((:log t)
@@ -154,7 +154,7 @@
                             (:name "Overdue"
                              :deadline past
                              :order 8)
-                            (:discard (:todo "TODO"))))))))))
+                            (:discard (:anything))))))))))
   :config
   (advice-add 'org-refile :after
               (lambda (&rest _)
@@ -175,7 +175,8 @@
   :config
   (setq copilot--indentation-alist
         '((tuareg-mode 2)
-          (emacs-lisp-mode 2))))
+          (emacs-lisp-mode 2)))
+  (map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf))
 
 (use-package! vlf
   :config
@@ -195,13 +196,24 @@
   :config
   (setq poetry-tracking-strategy 'projectile))
 
-(use-package! tuareg
-  :init (require 'dap-ocaml))
-
 (use-package! dap-mode
   :hook (lsp-mode . dap-mode)
   :config
   (setq dap-auto-configure-features '(sessions locals breakpoints))
+  (map! :leader
+        (:prefix ("d" . "debug")
+         :desc "DAP Debug" "d" #'dap-debug
+         :desc "DAP Disconnect" "D" #'dap-disconnect
+         :desc "DAP Toggle Breakpoint" "b" #'dap-breakpoint-toggle
+         :desc "DAP Step In" "i" #'dap-step-in
+         :desc "DAP Step Out" "O" #'dap-step-out
+         :desc "DAP Step Over" "o" #'dap-next
+         :desc "DAP Restart" "r" #'dap-debug-restart
+         :desc "DAP Debug Last" "l" #'dap-debug-last
+         :desc "DAP Continue" "c" #'dap-continue
+         :desc "DAP Breakpoint Condition" "C" #'dap-breakpoint-condition
+         :desc "DAP UI Show" "u" #'dap-ui-show-many-windows
+         :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
   (dap-ui-controls-mode 0))
 
 (use-package! jsonnet-mode
@@ -234,21 +246,23 @@
 
 (use-package! vundo
   :config
-  ;; Use `HJKL` VIM-like motion, also Home/End to jump around.
-  (define-key vundo-mode-map (kbd "l") #'vundo-forward)
-  (define-key vundo-mode-map (kbd "<right>") #'vundo-forward)
-  (define-key vundo-mode-map (kbd "h") #'vundo-backward)
-  (define-key vundo-mode-map (kbd "<left>") #'vundo-backward)
-  (define-key vundo-mode-map (kbd "j") #'vundo-next)
-  (define-key vundo-mode-map (kbd "<down>") #'vundo-next)
-  (define-key vundo-mode-map (kbd "k") #'vundo-previous)
-  (define-key vundo-mode-map (kbd "<up>") #'vundo-previous)
-  (define-key vundo-mode-map (kbd "<home>") #'vundo-stem-root)
-  (define-key vundo-mode-map (kbd "<end>") #'vundo-stem-end)
-  (define-key vundo-mode-map (kbd "q") #'vundo-quit)
-  (define-key vundo-mode-map (kbd "C-g") #'vundo-quit)
-  (define-key vundo-mode-map (kbd "RET") #'vundo-confirm)
+  (map! (:mode 'vundo-mode
+         :n "l" #'vundo-forward
+         :n "l" #'vundo-forward
+         :n "<right>" #'vundo-forward
+         :n "h" #'vundo-backward
+         :n "<left>" #'vundo-backward
+         :n "j" #'vundo-next
+         :n "<down>" #'vundo-next
+         :n "k" #'vundo-previous
+         :n "<up>" #'vundo-previous
+         :n "<home>" #'vundo-stem-root
+         :n "<end>" #'vundo-stem-end
+         :n "q" #'vundo-quit
+         :n "C-g" #'vundo-quit
+         :n "RET" #'vundo-confirm))
   (map! :leader :desc "Visualize undo tree" :n "s u" #'vundo))
+
 ;;
 ;; after/hooks/conditions
 ;;
@@ -308,30 +322,8 @@
        :desc "CD to current directory in Kitty" "d" #'+kitty/cd-to-here
        :desc "CD to project root in Kitty" "p" #'+kitty/cd-to-project))
 
-;; dap
-(map! :leader
-      (:prefix ("d" . "debug")
-       :desc "DAP Debug" "d" #'dap-debug
-       :desc "DAP Disconnect" "D" #'dap-disconnect
-       :desc "DAP Toggle Breakpoint" "b" #'dap-breakpoint-toggle
-       :desc "DAP Step In" "i" #'dap-step-in
-       :desc "DAP Step Out" "O" #'dap-step-out
-       :desc "DAP Step Over" "o" #'dap-next
-       :desc "DAP Restart" "r" #'dap-debug-restart
-       :desc "DAP Debug Last" "l" #'dap-debug-last
-       :desc "DAP Continue" "c" #'dap-continue
-       :desc "DAP Breakpoint Condition" "C" #'dap-breakpoint-condition
-       :desc "DAP UI Show" "u" #'dap-ui-show-many-windows
-       :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
-
-;; copilot
-(map! :mode copilot-mode "<backtab>" #'copilot-accept-completion)
-
 ;; gpg
 (map! :leader :desc "Sign region" :n "S" #'gpg-sign-comment)
-
-;; vlf
-(map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf)
 
 ;; counsel
 (map! :leader :desc "Ripgrep current directory" :n "s s" #'counsel-rg)

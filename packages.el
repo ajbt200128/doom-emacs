@@ -71,3 +71,5 @@
 (package! vundo)
 
 (package! org-super-agenda)
+
+(disable-packages! opam-switch-mode)
