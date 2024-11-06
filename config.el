@@ -89,10 +89,18 @@
 (use-package! org
   :config
   (setq org-directory "~/org/"
-        org-default-notes-file "~/org/agenda/refile.org"
+        org-default-notes-file "~/org/agenda/todo.org"
+        org-log-into-drawer t
+        org-log-done 'time
         org-capture-templates
-        '(("t" "TODO" entry (file "~/org/agenda/refile.org")
-           "* TODO %? %^G\n%T")))
+        '(("t" "TODO" entry (file+headline "~/org/agenda/todo.org" "Anytime")
+           "* TODO %? %^G\n%T")
+          ("i" "IDEA" entry (file "~/org/agenda/ideas.org")
+           "* IDEA %? %^G\n%T"))
+        org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)" "|" "DONE(d!)" "CANCELED(c@)")
+                            (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
+                            (sequence "|" "YES(y)" "NO(n)"))
+        )
   (setq org-agenda-files '("~/org/agenda")
         org-agenda-skip-scheduled-if-done t
         org-agenda-skip-deadline-if-done t
@@ -102,6 +110,7 @@
         org-agenda-start-day nil ;; i.e. today
         org-agenda-span 1
         org-agenda-start-on-weekday nil)
+  (map! :leader :mode 'org-mode :desc "org-add-note" :n "m n" #'org-add-note)
   (setq org-latex-src-block-backend 'minted
         org-latex-custom-lang-environments
         '((emacs-lisp "common-lispcode"))
@@ -166,21 +175,23 @@
 
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
-  :bind
-  (("C-TAB" . 'copilot-accept-completion-by-word)
-   ("C-<tab>" . 'copilot-accept-completion-by-word)
-   :map copilot-completion-map
-   ("<tab>" . 'copilot-accept-completion)
-   ("TAB" . 'copilot-accept-completion))
+  :bind (:map copilot-completion-map
+              ("<tab>" . 'copilot-accept-completion)
+              ("TAB" . 'copilot-accept-completion)
+              ("C-n" . 'copilot-next-completion)
+              ("C-p" . 'copilot-previous-completion))
+
   :config
-  (setq copilot--indentation-alist
-        '((tuareg-mode 2)
-          (emacs-lisp-mode 2)))
-  (map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf))
+  (add-to-list 'copilot-indentation-alist '(tuareg-mode 2))
+  (add-to-list 'copilot-indentation-alist '(org-mode 2))
+  (add-to-list 'copilot-indentation-alist '(text-mode 2))
+  (add-to-list 'copilot-indentation-alist '(closure-mode 2))
+  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
 
 (use-package! vlf
   :config
-  (setq vlf-application 'always))
+  (setq vlf-application 'always)
+  (map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf))
 
 (use-package! lsp-mode
   :config
@@ -284,6 +295,7 @@
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
 
+
 ;;
 ;; custom functions
 ;;
@@ -303,8 +315,6 @@
 ;;
 ;; keybindings
 ;;
-
-
 
 ;; kitty
 (map! :leader
