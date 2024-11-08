@@ -24,7 +24,7 @@
        (company +childframe)             ; the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
-       (ivy +fuzzy +prescient +icons +childframe) ; a search engine for love and life
+       (ivy +prescient +icons +childframe) ; a search engine for love and life
        ;; vertico           ; the search engine of the future
 
        :ui
@@ -81,8 +81,9 @@
        vterm           ; the best terminal emulation in Emacs
 
        :checkers
-       syntax            ; tasing you for every semicolon you forget
-       (spell +everywhere) ; tasing you for misspelling mispelling
+       (syntax +childframe +icons)            ; tasing you for every semicolon you forget
+                                        ; use jinx instead
+                                        ;(spell +everywhere) ; tasing you for misspelling mispelling
        grammar           ; tasing grammar mistake every you make
 
        :tools

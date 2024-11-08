@@ -200,6 +200,24 @@
         lsp-semgrep-scan-jobs 10
         lsp-rust-features "all"))
 
+(use-package! prescient
+  :config
+  (setq
+   prescient-filter-method '(literal regexp fuzzy)
+   prescient-persist-mode t
+   prescient-sort-length-enable t
+   prescient-sort-full-matches-first t)
+  )
+
+(use-package! jinx
+  :hook (emacs-startup . global-jinx-mode)
+  :config
+  (map!
+   :desc "jinx-correct" :n "z s" #'jinx-correct
+   :desc "jinx-correct-all" :n "z S" #'jinx-correct-all
+   )
+  )
+
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
 
@@ -273,6 +291,11 @@
          :n "C-g" #'vundo-quit
          :n "RET" #'vundo-confirm))
   (map! :leader :desc "Visualize undo tree" :n "s u" #'vundo))
+
+(use-package! vterm-toggle
+  :config
+  (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd)
+  )
 
 ;;
 ;; after/hooks/conditions

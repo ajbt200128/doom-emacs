@@ -73,3 +73,7 @@
 (package! org-super-agenda)
 
 (disable-packages! opam-switch-mode)
+
+(package! vterm-toggle)
+
+(package! jinx)
