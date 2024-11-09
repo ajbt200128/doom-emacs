@@ -200,15 +200,6 @@
         lsp-semgrep-scan-jobs 10
         lsp-rust-features "all"))
 
-(use-package! prescient
-  :config
-  (setq
-   prescient-filter-method '(literal regexp fuzzy)
-   prescient-persist-mode t
-   prescient-sort-length-enable t
-   prescient-sort-full-matches-first t)
-  )
-
 (use-package! jinx
   :hook (emacs-startup . global-jinx-mode)
   :config
@@ -357,9 +348,6 @@
 
 ;; gpg
 (map! :leader :desc "Sign region" :n "S" #'gpg-sign-comment)
-
-;; counsel
-(map! :leader :desc "Ripgrep current directory" :n "s s" #'counsel-rg)
 
 ;; projectile
 (map! :leader :desc "Projectile find and replace" :n "p R" #'projectile-replace)
