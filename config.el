@@ -241,6 +241,24 @@
   :config
   (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?})))
 
+;; Configure vetico mouse extension.
+(use-package! vertico-mouse
+  :after vertico
+  :config
+  ;; Enable vertico-mouse
+  (vertico-mouse-mode))
+
+;; Configure vertico directory extension.
+(use-package! vertico-directory
+  :after vertico
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+              ("RET" . vertico-directory-enter)
+              ("DEL" . vertico-directory-delete-char)
+              ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
 (use-package! ace-window
   :config
   (setq aw-background nil)
