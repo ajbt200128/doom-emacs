@@ -204,7 +204,7 @@
   :hook (emacs-startup . global-jinx-mode)
   :config
   (map!
-   :desc "jinx-correct" :n "z s" #'jinx-correct
+   :desc "jinx-correct" :n "z =" #'jinx-correct
    :desc "jinx-correct-all" :n "z S" #'jinx-correct-all
    )
   )

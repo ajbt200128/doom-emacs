@@ -49,6 +49,8 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
 
+;; TODO: test
+(disable-packages! opam-switch-mode ispell)
 
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
@@ -57,8 +59,6 @@
 
 (package! magit-delta)
 
-(package! exec-path-from-shell)
-
 (package! jsonnet-mode)
 
 (package! protobuf-mode
@@ -66,13 +66,10 @@
            :files ("editors/protobuf-mode.el")))
 
 (package! vlfi)
-(package! nickel-mode)
 
 (package! vundo)
 
 (package! org-super-agenda)
-
-(disable-packages! opam-switch-mode)
 
 (package! vterm-toggle)
 
