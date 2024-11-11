@@ -241,6 +241,14 @@
   :config
   (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?})))
 
+(use-package! consult
+  :config
+  (map! :leader :n "P" #'yank-from-kill-ring)
+  (map! :leader :n "e" #'consult-flycheck)
+  (map! :leader :n "s R" #'consult-flycheck)
+  (map! :leader :n "M" #'consult-mode-command)
+  )
+
 ;; Configure vetico mouse extension.
 (use-package! vertico-mouse
   :after vertico
@@ -319,10 +327,6 @@
   (advice-add 'dap-ui-controls-mode :override #'ignore))
 
 (add-hook! org-mode 'org-fragtog-mode)
-
-(when (memq window-system '(mac ns x))
-  (exec-path-from-shell-initialize))
-
 
 ;; File templates
 (set-file-template! "\\.ml$" :trigger "__.ml" :mode 'tuareg-mode)
