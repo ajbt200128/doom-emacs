@@ -245,7 +245,6 @@
   :config
   (map! :leader :n "P" #'yank-from-kill-ring)
   (map! :leader :n "e" #'consult-flycheck)
-  (map! :leader :n "s R" #'consult-flycheck)
   (map! :leader :n "M" #'consult-mode-command)
   )
 
