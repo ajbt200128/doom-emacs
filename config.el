@@ -97,7 +97,7 @@
            "* TODO %? %^G\n%T")
           ("i" "IDEA" entry (file "~/org/agenda/ideas.org")
            "* IDEA %? %^G\n%T"))
-        org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)" "|" "DONE(d!)" "CANCELED(c@)")
+        org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)" "|" "DONE(d!)" "CANCELED(c@) REVISIT(r@)")
                             (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
                             (sequence "|" "YES(y)" "NO(n)"))
         )
@@ -151,9 +151,6 @@
             (alltodo "" ((org-agenda-overriding-header "")
                          (org-super-agenda-groups
                           '((:log t)
-                            (:name "To refile"
-                             :file-path "refile\\.org"
-                             :order 5)
                             (:name "Due Today"
                              :deadline today
                              :order 6)
@@ -165,11 +162,19 @@
                              :order 8)
                             (:discard (:anything))))))))))
   :config
-  (advice-add 'org-refile :after
-              (lambda (&rest _)
-                (org-save-all-org-buffers)))
-  (map! :leader :desc "Agenda View" :n "a" #'(lambda (&rest _) (interactive)
-                                               (org-agenda nil "c")))
+  (map! :leader :desc "Agenda View" :n "a"
+        #'(lambda (&rest _)
+            (interactive)
+            (org-agenda nil "c")))
+  (let ((org-save-all (list
+                       'org-refile
+                       'org-todo
+                       'org-archive-subtree
+                       'org-archive-subtree-default)))
+    (dolist (fn org-save-all)
+      (advice-add fn :after
+                  (lambda (&rest _)
+                    (org-save-all-org-buffers)))))
   (org-super-agenda-mode))
 
 
@@ -289,25 +294,14 @@
           ("6" . 5) ("7" . 6) ("8" . 7) ("9" . 8)))
   (ace-window-display-mode))
 
-(use-package! vundo
+(use-package! undo-tree
   :config
-  (map! (:mode 'vundo-mode
-         :n "l" #'vundo-forward
-         :n "l" #'vundo-forward
-         :n "<right>" #'vundo-forward
-         :n "h" #'vundo-backward
-         :n "<left>" #'vundo-backward
-         :n "j" #'vundo-next
-         :n "<down>" #'vundo-next
-         :n "k" #'vundo-previous
-         :n "<up>" #'vundo-previous
-         :n "<home>" #'vundo-stem-root
-         :n "<end>" #'vundo-stem-end
-         :n "q" #'vundo-quit
-         :n "C-g" #'vundo-quit
-         :n "RET" #'vundo-confirm))
-  (map! :leader :desc "Visualize undo tree" :n "s u" #'vundo))
-
+  (defun +undo-tree-escape-hook nil "Exit undo tree"
+         (if (eq major-mode 'undo-tree-visualizer-mode)
+             (undo-tree-visualizer-quit))
+         )
+  :hook (doom-escape-hook . +undo-tree-escape-hook)
+  )
 (use-package! vterm-toggle
   :config
   (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd)

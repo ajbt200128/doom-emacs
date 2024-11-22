@@ -67,7 +67,7 @@
 
 (package! vlfi)
 
-(package! vundo)
+;;(package! vundo)
 
 (package! org-super-agenda)
 
