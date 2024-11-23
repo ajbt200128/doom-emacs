@@ -1,12 +1,46 @@
 ;;; tools/kitty/autoload/kitty.el -*- lexical-binding: t; -*-
 
 ;; Inspired by :tools tmux
-(defvar +kitty-last-command nil
-  "The last command ran by `+kitty'. Used by `+kitty/rerun'")
+
+(defvar +kitty-history nil
+  "The shell history.")
 
 (defvar +kitty-last-retcode nil
   "The last kitty return code.")
 
+(defcustom +kitty-history-file "~/.zsh_history"
+  "The file to read shell history from."
+  :type 'string
+  :group 'kitty)
+
+(defun last-shell-history-items (&optional file limit)
+  "Get the last shell history items from FILE."
+  (let* ((file (or file +kitty-history-file))
+         (lines (split-string (f-read file) "\n" t))
+         (items (reverse (seq-filter
+                          (lambda (line)
+                            (and
+                             (not (string-empty-p line))
+                             (not (string-match "^: " line))))
+                          lines))))
+    (append
+     +kitty-history
+     (if limit
+         (seq-take items limit)
+       items))))
+
+(defun +kitty-completing-read (prompt &optional initial limit)
+  "Read a command from the shell history."
+  (let ((candidates (last-shell-history-items nil limit)))
+    (list
+     (consult--read
+      candidates
+      :prompt prompt
+      :initial initial
+      :sort nil
+      :default (car candidates)
+      :require-match nil
+      ))))
 ;;
 ;; Commands
 
@@ -25,7 +59,6 @@
         (unwind-protect
             (if (= 0 (setq code (quiet! (shell-command cmdstr output errors))))
                 (with-current-buffer output
-                  (setq +kitty-last-command `(,(substring cmdstr (+ 1 (length bin))) ,@args))
                   (buffer-string))
               (error "[%d] kitty $ %s (%s)"
                      code
@@ -40,8 +73,8 @@
   "Run COMMAND in kitty. If NORETURN is non-nil, send the commands as keypresses
 but do not execute them."
   (interactive
-   (list (read-string "kitty $ ")
-         current-prefix-arg))
+   (+kitty-completing-read "run:"))
+  (add-to-list '+kitty-history command)
   (+kitty (concat "send-text "
                   (shell-quote-argument command)
                   (unless noreturn "'\n'"))))
@@ -56,15 +89,16 @@ but do not execute them."
               noreturn))
 
 ;;;###autoload
-(defun +kitty/rerun ()
+(defun +kitty/rerun (lastc)
   "Rerun the last command executed by `+kitty' and `+kitty/run'."
-  (interactive)
-  (unless +kitty-last-command
+  (interactive
+   (+kitty-completing-read "rerun:" (car +kitty-history)))
+  (unless lastc
     (user-error "No last command to run"))
-  (apply #'+kitty +kitty-last-command))
+  (apply #'+kitty/run lastc))
 
 ;;;###autoload
-(defun +kitty/cd (&optional directory noreturn)
+(defun +kitty/cd (&optional directory )
   "Change the pwd of the currently active kitty pane to DIRECTORY.
 
 DIRECTORY defaults to `default-directory' if omitted, or to `doom-project-root'
@@ -72,11 +106,11 @@ if prefix arg is non-nil.
 
 If NORETURN is non-nil, send the cd command to kitty, but do not execute the
 command."
-  (interactive "D")
-  (+kitty/run (format "cd %S" (or directory (if current-prefix-arg
+  (interactive (let ((default-directory (or (doom-project-root) default-directory)))
+                 (find-file-read-args "cd: " nil)))
+  (+kitty/run (format "cd %s" (or directory (if current-prefix-arg
                                                 (doom-project-root)
-                                              default-directory)))
-              noreturn))
+                                              default-directory)))))
 
 ;;;###autoload
 (defun +kitty/cd-to-here ()
