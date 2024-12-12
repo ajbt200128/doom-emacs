@@ -74,3 +74,5 @@
 (package! vterm-toggle)
 
 (package! jinx)
+
+(package! git-link)

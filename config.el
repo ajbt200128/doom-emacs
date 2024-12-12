@@ -302,6 +302,12 @@
          )
   :hook (doom-escape-hook . +undo-tree-escape-hook)
   )
+
+(use-package! git-link
+  :config
+  (map! :leader :desc "Copy git link" :n "g l" #'git-link-dispatch)
+  )
+
 (use-package! vterm-toggle
   :config
   (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd)
