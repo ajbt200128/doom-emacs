@@ -76,3 +76,9 @@
 (package! jinx)
 
 (package! git-link)
+
+
+(package! consult-tramp
+  :recipe (:host github :repo "Ladicle/consult-tramp"
+           :files ("consult-tramp.el")))
+

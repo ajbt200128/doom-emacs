@@ -110,7 +110,7 @@
         org-agenda-start-day nil ;; i.e. today
         org-agenda-span 1
         org-agenda-start-on-weekday nil)
-  (map! :leader :mode 'org-mode :desc "org-add-note" :n "m n" #'org-add-note)
+  (map! :mode 'org-mode :leader :desc "org-add-note" :n "m N" #'org-add-note)
   (setq org-latex-src-block-backend 'minted
         org-latex-custom-lang-environments
         '((emacs-lisp "common-lispcode"))
@@ -196,7 +196,12 @@
 (use-package! vlf
   :config
   (setq vlf-application 'always)
-  (map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf))
+  (map! :leader :desc "Open very large file with VLF" :n "f v" #'vlf)
+  (map! (:mode 'vlf-mode
+         :leader
+         :desc "VLF next" :n "m n" #'vlf-next-batch
+         :desc "VLF previous" :n "m p" #'vlf-prev-batch)
+        )
 
 (use-package! lsp-mode
   :config
@@ -204,6 +209,7 @@
         lsp-disabled-clients '((tuareg-mode . semgrep-ls))
         lsp-semgrep-scan-jobs 10
         lsp-rust-features "all"))
+  )
 
 (use-package! jinx
   :hook (emacs-startup . global-jinx-mode)
@@ -248,9 +254,11 @@
 
 (use-package! consult
   :config
-  (map! :leader :n "P" #'yank-from-kill-ring)
-  (map! :leader :n "e" #'consult-flycheck)
-  (map! :leader :n "M" #'consult-mode-command)
+  (map! :leader
+        :nv "P" #'yank-from-kill-ring
+        :n "c e" #'consult-flycheck
+        :n "M" #'consult-mode-command
+        :n "s c" #'consult-tramp)
   )
 
 ;; Configure vetico mouse extension.
@@ -305,7 +313,7 @@
 
 (use-package! git-link
   :config
-  (map! :leader :desc "Copy git link" :n "g l" #'git-link-dispatch)
+  (map! :leader :desc "Copy git link" :n "g d" #'git-link-dispatch)
   )
 
 (use-package! vterm-toggle
@@ -378,3 +386,6 @@
 
 ;; treemacs
 (map! :leader :desc "Treemacs" :n "f t" #'treemacs)
+
+;; misc
+(map! :nvi "/" #'+default/search-buffer)
