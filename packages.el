@@ -50,7 +50,7 @@
                                         ;(unpin! t)
 
 ;; TODO: test
-(disable-packages! opam-switch-mode ispell)
+(disable-packages! opam-switch-mode ispell flycheck-popup-tip)
 
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
@@ -82,3 +82,15 @@
   :recipe (:host github :repo "Ladicle/consult-tramp"
            :files ("consult-tramp.el")))
 
+(package! eglot-booster
+  :recipe (:local-repo "/Users/r2cuser/personal/eglot-booster"))
+
+(package! sideline-eglot
+  :recipe (:host github :repo "emacs-sideline/sideline-eglot"
+           :files ("sideline-eglot.el")))
+
+(package! eldoc-box)
+
+(package! flycheck-inline)
+
+(package! ocaml-eglot)

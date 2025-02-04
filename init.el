@@ -21,11 +21,12 @@
        ;;layout            ; auie,ctsrnm is the superior home row
 
        :completion
-       (company +childframe)             ; the ultimate code completion backend
+       ;;(company +childframe)             ; the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
        ;;(ivy +fuzzy +prescient +icons +childframe) ; a search engine for love and life
        (vertico +childframe +icons) ; the search engine of the future
+       (corfu +icons +orderless +dabbrev)
 
        :ui
        ;;deft              ; notational velocity for Emacs
@@ -44,7 +45,7 @@
        ophints           ; highlight the region an operation acts on
        (popup +all +defaults)   ; tame sudden yet inevitable temporary windows
        ;;tabs              ; a tab bar for Emacs
-       (treemacs +lsp)          ; a project drawer, like neotree but cooler
+       ;;(treemacs)          ; a project drawer, like neotree but cooler
        ;;unicode           ; extended unicode support for various languages
        (vc-gutter +pretty) ; vcs diff in the fringe
        vi-tilde-fringe   ; fringe tildes to mark beyond EOB
@@ -81,7 +82,7 @@
        vterm           ; the best terminal emulation in Emacs
 
        :checkers
-       (syntax +childframe +icons)            ; tasing you for every semicolon you forget
+       (syntax +icons)            ; tasing you for every semicolon you forget
        ;; use jinx instead
        ;;(spell +everywhere) ; tasing you for misspelling mispelling
        grammar           ; tasing grammar mistake every you make
@@ -89,7 +90,7 @@
        :tools
        ;;ansible
        ;;biblio            ; Writes a PhD for you (citation needed)
-       (debugger +lsp)            ; FIXME stepping through code, to help you add bugs
+       ;;(debugger)            ; FIXME stepping through code, to help you add bugs
        direnv
        (docker +lsp)
        ;;editorconfig      ; let someone else argue about tabs vs spaces
@@ -97,7 +98,7 @@
        (eval +overlay)     ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
        (lookup +dictionary +offline) ; navigate your code and its documentation
-       (lsp +peek)         ; M-x vscode
+       (lsp +eglot)         ; M-x vscode
        magit               ; a git porcelain for Emacs
        ;;make              ; run make tasks from Emacs
        ;;pass              ; password manager for nerds

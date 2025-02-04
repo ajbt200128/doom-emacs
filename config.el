@@ -203,12 +203,6 @@
          :desc "VLF previous" :n "m p" #'vlf-prev-batch)
         )
 
-(use-package! lsp-mode
-  :config
-  (setq lsp-progress-function 'lsp-on-progress-legacy
-        lsp-disabled-clients '((tuareg-mode . semgrep-ls))
-        lsp-semgrep-scan-jobs 10
-        lsp-rust-features "all"))
   )
 
 (use-package! jinx
@@ -227,25 +221,25 @@
   :config
   (setq poetry-tracking-strategy 'projectile))
 
-(use-package! dap-mode
-  :hook (lsp-mode . dap-mode)
-  :config
-  (setq dap-auto-configure-features '(sessions locals breakpoints))
-  (map! :leader
-        (:prefix ("d" . "debug")
-         :desc "DAP Debug" "d" #'dap-debug
-         :desc "DAP Disconnect" "D" #'dap-disconnect
-         :desc "DAP Toggle Breakpoint" "b" #'dap-breakpoint-toggle
-         :desc "DAP Step In" "i" #'dap-step-in
-         :desc "DAP Step Out" "O" #'dap-step-out
-         :desc "DAP Step Over" "o" #'dap-next
-         :desc "DAP Restart" "r" #'dap-debug-restart
-         :desc "DAP Debug Last" "l" #'dap-debug-last
-         :desc "DAP Continue" "c" #'dap-continue
-         :desc "DAP Breakpoint Condition" "C" #'dap-breakpoint-condition
-         :desc "DAP UI Show" "u" #'dap-ui-show-many-windows
-         :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
-  (dap-ui-controls-mode 0))
+;; TODO DAPE mode
+;; (use-package! dap-mode
+;;   :config
+;;   (setq dap-auto-configure-features '(sessions locals breakpoints))
+;;   (map! :leader
+;;         (:prefix ("d" . "debug")
+;;          :desc "DAP Debug" "d" #'dap-debug
+;;          :desc "DAP Disconnect" "D" #'dap-disconnect
+;;          :desc "DAP Toggle Breakpoint" "b" #'dap-breakpoint-toggle
+;;          :desc "DAP Step In" "i" #'dap-step-in
+;;          :desc "DAP Step Out" "O" #'dap-step-out
+;;          :desc "DAP Step Over" "o" #'dap-next
+;;          :desc "DAP Restart" "r" #'dap-debug-restart
+;;          :desc "DAP Debug Last" "l" #'dap-debug-last
+;;          :desc "DAP Continue" "c" #'dap-continue
+;;          :desc "DAP Breakpoint Condition" "C" #'dap-breakpoint-condition
+;;          :desc "DAP UI Show" "u" #'dap-ui-show-many-windows
+;;          :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
+;;   (dap-ui-controls-mode 0))
 
 (use-package! jsonnet-mode
   :defer t
@@ -321,6 +315,31 @@
   (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd)
   )
 
+(use-package! eglot
+  :hook
+  :config
+  (setq eglot-autoshutdown t)
+  )
+
+(use-package! eglot-booster
+  :after eglot
+  :config
+  (eglot-booster-mode))
+
+
+(use-package! eldoc-box
+  :hook
+  (unless (display-graphic-p)
+    (eglot-managed-mode-hook . eldoc-box-hover-mode)))
+
+(use-package! flycheck-inline
+  :hook (flycheck-mode . flycheck-inline-mode))
+
+(use-package! ocaml-eglot
+  :after tuareg
+  :hook
+  (tuareg-mode . ocaml-eglot)
+  (ocaml-eglot . eglot-ensure))
 ;;
 ;; after/hooks/conditions
 ;;
@@ -387,5 +406,3 @@
 ;; treemacs
 (map! :leader :desc "Treemacs" :n "f t" #'treemacs)
 
-;; misc
-(map! :nvi "/" #'+default/search-buffer)
