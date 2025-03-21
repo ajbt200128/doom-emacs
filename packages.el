@@ -94,3 +94,5 @@
 (package! flycheck-inline)
 
 (package! ocaml-eglot)
+
+(package! ace-window)

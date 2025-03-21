@@ -94,13 +94,20 @@
         org-log-done 'time
         org-capture-templates
         '(("t" "TODO" entry (file+headline "~/org/agenda/todo.org" "Anytime")
-           "* TODO %? %^G\n%T")
+           "* TODO %^{Headline}\n%T\n%?")
+          ("d" "DONE" entry (file+headline "~/org/agenda/todo.org" "Today")
+           "* DONE %^{Headline}\nCLOSED: %U\n%T\n%?")
+          ("m" "MTNG" entry (file "~/org/agenda/meeting.org")
+           "* MTNG %T %^{Headline}\n** People\n * %?\n** Notes\n*** \n* Action Items\n - [ ] ")
           ("i" "IDEA" entry (file "~/org/agenda/ideas.org")
-           "* IDEA %? %^G\n%T"))
-        org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)" "|" "DONE(d!)" "CANCELED(c@) REVISIT(r@)")
+           "* IDEA %^{Headline}\n%T\n%?"))
+        org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)"
+                             "|" "DONE(d!)" "CANCELED(c@)" "REVISIT(r@)" "MTNG(m)")
                             (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
                             (sequence "|" "YES(y)" "NO(n)"))
-        )
+        org-todo-keyword-faces (append org-todo-keyword-faces '(("IDEA" . (:foreground "blue" :weight bold))
+                                                                ("MTNG" . (:foreground "purple" :weight bold))
+                                                                ("CANCELED" . (:foreground "orange" :weight bold)))))
   (setq org-agenda-files '("~/org/agenda")
         org-agenda-skip-scheduled-if-done t
         org-agenda-skip-deadline-if-done t
@@ -316,7 +323,6 @@
   )
 
 (use-package! eglot
-  :hook
   :config
   (setq eglot-autoshutdown t)
   )
