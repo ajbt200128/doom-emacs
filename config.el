@@ -102,12 +102,12 @@
           ("i" "IDEA" entry (file "~/org/agenda/ideas.org")
            "* IDEA %^{Headline}\n%T\n%?"))
         org-todo-keywords '((sequence "TODO(t!)" "STRT(s!)" "WAIT(w@/!)" "IDEA(i)"
-                             "|" "DONE(d!)" "CANCELED(c@)" "REVISIT(r@)" "MTNG(m)")
+                             "|" "DONE(d!)" "CANCELLED(c@)" "REVISIT(r@)" "MTNG(m)")
                             (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
                             (sequence "|" "YES(y)" "NO(n)"))
         org-todo-keyword-faces (append org-todo-keyword-faces '(("IDEA" . (:foreground "blue" :weight bold))
                                                                 ("MTNG" . (:foreground "purple" :weight bold))
-                                                                ("CANCELED" . (:foreground "orange" :weight bold)))))
+                                                                ("CANCELLED" . (:foreground "orange" :weight bold)))))
   (setq org-agenda-files '("~/org/agenda")
         org-agenda-skip-scheduled-if-done t
         org-agenda-skip-deadline-if-done t
@@ -224,6 +224,14 @@
 (use-package! magit-delta
   :hook (magit-mode . magit-delta-mode))
 
+(defun whoami ()
+  (shell-command-to-string "whoami"))
+
+(defun projectile-add-known-projects (dirs)
+  (dolist (dir dirs)
+    (projectile-add-known-project dir))
+  )
+
 (use-package! poetry
   :config
   (setq poetry-tracking-strategy 'projectile))
@@ -251,7 +259,9 @@
 (use-package! jsonnet-mode
   :defer t
   :config
-  (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?})))
+  (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?}))
+  (push '(jsonnet-fmt . (jsonnet-fmt-command "-")) apheleia-formatters)
+  (setf (alist-get 'jsonnet-mode apheleia-mode-alist) 'jsonnet-fmt))
 
 (use-package! consult
   :config
@@ -259,8 +269,7 @@
         :nv "P" #'yank-from-kill-ring
         :n "c e" #'consult-flycheck
         :n "M" #'consult-mode-command
-        :n "s c" #'consult-tramp)
-  )
+        :n "s c" #'consult-tramp))
 
 ;; Configure vetico mouse extension.
 (use-package! vertico-mouse
@@ -309,23 +318,20 @@
          (if (eq major-mode 'undo-tree-visualizer-mode)
              (undo-tree-visualizer-quit))
          )
-  :hook (doom-escape-hook . +undo-tree-escape-hook)
-  )
+  :hook (doom-escape-hook . +undo-tree-escape-hook))
 
 (use-package! git-link
   :config
-  (map! :leader :desc "Copy git link" :n "g d" #'git-link-dispatch)
-  )
+  (map! :leader :desc "Copy git link" :n "g d" #'git-link-dispatch))
 
 (use-package! vterm-toggle
+  :after vterm
   :config
-  (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd)
-  )
+  (map! :leader :desc "Toggle vterm" :n "o t" #'vterm-toggle-cd))
 
 (use-package! eglot
   :config
-  (setq eglot-autoshutdown t)
-  )
+  (setq eglot-autoshutdown t))
 
 (use-package! eglot-booster
   :after eglot
@@ -370,15 +376,14 @@
 
 (defun gpg-sign-string (message)
   (shell-command-to-string
-   (format "echo \"%s\" | gpg --clearsign -o-" message))
-  )
+   (format "echo \"%s\" | gpg --clearsign -o-" message)))
 
 (defun gpg-sign-comment (start end)
   (interactive "r")
   (let ((comment (buffer-substring-no-properties start end)))
     (delete-region start end)
-    (insert (gpg-sign-string comment)))
-  )
+    (insert (gpg-sign-string comment))))
+
 
 ;;
 ;; keybindings
@@ -408,7 +413,3 @@
 
 ;; format
 (map! :leader :desc "Format buffer" :n "b f" #'+format/buffer)
-
-;; treemacs
-(map! :leader :desc "Treemacs" :n "f t" #'treemacs)
-
