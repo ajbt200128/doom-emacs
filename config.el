@@ -352,6 +352,11 @@
   :hook
   (tuareg-mode . ocaml-eglot)
   (ocaml-eglot . eglot-ensure))
+
+(use-package! magit-gt
+  :config
+  (map! :mode 'magit-status-mode :desc "Magit Graphite" :n "w" #'magit-gt)
+  )
 ;;
 ;; after/hooks/conditions
 ;;

@@ -83,7 +83,11 @@
            :files ("consult-tramp.el")))
 
 (package! eglot-booster
-  :recipe (:local-repo "/Users/r2cuser/personal/eglot-booster"))
+  :recipe (:host github :repo "jdtsmith/eglot-booster"
+           :files ("eglot-booster.el")))
+
+(package! magit-gt
+  :recipe (:local-repo "/Users/r2cuser/personal/magit-gt"))
 
 (package! sideline-eglot
   :recipe (:host github :repo "emacs-sideline/sideline-eglot"
