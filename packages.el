@@ -51,6 +51,8 @@
 
 ;; TODO: test
 (disable-packages! opam-switch-mode ispell flycheck-popup-tip)
+;; provided by nix
+(package! pdf-tools :built-in 'prefer)
 
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
@@ -73,7 +75,8 @@
 
 (package! vterm-toggle)
 
-(package! jinx)
+; provided by nix cause it's a pta otherwise
+;;(package! jinx)
 
 (package! git-link)
 
@@ -87,7 +90,8 @@
            :files ("eglot-booster.el")))
 
 (package! magit-gt
-  :recipe (:local-repo "/Users/r2cuser/personal/magit-gt"))
+  :recipe (:host github :repo "ajbt200128/magit-gt"
+           :files ("magit-gt.el")))
 
 (package! sideline-eglot
   :recipe (:host github :repo "emacs-sideline/sideline-eglot"

@@ -256,12 +256,15 @@
 ;;          :desc "DAP UI Hide" "U" #'dap-ui-hide-many-windows))
 ;;   (dap-ui-controls-mode 0))
 
+(use-package! apheleia
+  :config
+  (push '(jsonnet-fmt . (jsonnet-fmt-command "-")) apheleia-formatters)
+  (setf (alist-get 'jsonnet-mode apheleia-mode-alist) 'jsonnet-fmt))
+
 (use-package! jsonnet-mode
   :defer t
   :config
-  (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?}))
-  (push '(jsonnet-fmt . (jsonnet-fmt-command "-")) apheleia-formatters)
-  (setf (alist-get 'jsonnet-mode apheleia-mode-alist) 'jsonnet-fmt))
+  (set-electric! 'jsonnet-mode :chars '(?\n ?: ?{ ?})))
 
 (use-package! consult
   :config
@@ -353,10 +356,26 @@
   (tuareg-mode . ocaml-eglot)
   (ocaml-eglot . eglot-ensure))
 
+(use-package! magit
+  :config
+  (transient-define-suffix magit-submodule-update-all (args)
+    :class 'magit--git-submodule-suffix
+    :description "Update all         git submodule update [--force] [--no-fetch]
+                     [--remote] [--recursive] [--checkout|--rebase|--merge]"
+    (interactive
+     (list
+      (magit-submodule-arguments
+       "--force" "--remote" "--recursive" "--checkout" "--rebase" "--merge"
+       "--no-fetch")))
+    (magit-with-toplevel
+      (magit-run-git-async "submodule" "update" args)))
+  (transient-insert-suffix 'magit-submodule "l" '("U" magit-submodule-update-all)))
+
 (use-package! magit-gt
   :config
-  (map! :mode 'magit-status-mode :desc "Magit Graphite" :n "w" #'magit-gt)
-  )
+  (map! :mode 'magit-status-mode :desc "Magit Graphite" :n "w" #'magit-gt))
+
+(message "%s" (transient-get-suffix 'magit-submodule "f"))
 ;;
 ;; after/hooks/conditions
 ;;
