@@ -272,6 +272,7 @@
         :nv "P" #'yank-from-kill-ring
         :n "c e" #'consult-flycheck
         :n "M" #'consult-mode-command
+        :n "\"" #'consult-global-mark
         :n "s c" #'consult-tramp))
 
 ;; Configure vetico mouse extension.
@@ -437,3 +438,5 @@
 
 ;; format
 (map! :leader :desc "Format buffer" :n "b f" #'+format/buffer)
+;; https://github.com/doomemacs/doomemacs/issues/8460
+(map! :leader :desc "Save buffer" "f s" #'save-buffer)
