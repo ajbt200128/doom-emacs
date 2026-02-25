@@ -104,3 +104,7 @@
 (package! ocaml-eglot)
 
 (package! ace-window)
+
+(package! claude-code
+  :recipe (:host github :repo "anthropics/claude-code"
+           :files ("integrations/emacs/claude-code.el")))

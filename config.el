@@ -335,7 +335,9 @@
 
 (use-package! eglot
   :config
-  (setq eglot-autoshutdown t))
+  (setq eglot-autoshutdown t)
+                                        ; conflicts with tree-sitter
+  (setq eglot-ignored-server-capabilities '(:semanticTokensProvider)))
 
 (use-package! eglot-booster
   :after eglot
@@ -375,6 +377,15 @@
 (use-package! magit-gt
   :config
   (map! :mode 'magit-status-mode :desc "Magit Graphite" :n "w" #'magit-gt))
+
+(use-package! claude-code
+  :config
+  (map! :leader
+        (:prefix ("l" . "claude")
+         :desc "Start Claude Code" "l" #'claude-code-start
+         :desc "Send region to Claude" "r" #'claude-code-send-region
+         :desc "Send buffer to Claude" "b" #'claude-code-send-buffer
+         :desc "Send interrupt to Claude" "c" #'claude-code-interrupt)))
 
 (message "%s" (transient-get-suffix 'magit-submodule "f"))
 ;;
