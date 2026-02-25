@@ -75,7 +75,7 @@
 
 (package! vterm-toggle)
 
-; provided by nix cause it's a pta otherwise
+                                        ; provided by nix cause it's a pta otherwise
 ;;(package! jinx)
 
 (package! git-link)
@@ -105,6 +105,9 @@
 
 (package! ace-window)
 
+(package! inheritenv
+  :recipe (:host github :repo "purcell/inheritenv"))
+
 (package! claude-code
-  :recipe (:host github :repo "anthropics/claude-code"
-           :files ("integrations/emacs/claude-code.el")))
+  :recipe (:host github :repo "stevemolitor/claude-code.el"
+           :files ("claude-code.el")))

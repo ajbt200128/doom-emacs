@@ -380,12 +380,9 @@
 
 (use-package! claude-code
   :config
-  (map! :leader
-        (:prefix ("l" . "claude")
-         :desc "Start Claude Code" "l" #'claude-code-start
-         :desc "Send region to Claude" "r" #'claude-code-send-region
-         :desc "Send buffer to Claude" "b" #'claude-code-send-buffer
-         :desc "Send interrupt to Claude" "c" #'claude-code-interrupt)))
+  (setq claude-code-terminal-backend 'vterm)
+                                        ; map claude-code-transient to SPC l
+  (map! :leader :desc "Claude Code" "l" #'claude-code-transient))
 
 (message "%s" (transient-get-suffix 'magit-submodule "f"))
 ;;
