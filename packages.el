@@ -54,8 +54,7 @@
 ;; provided by nix
 (package! pdf-tools :built-in 'prefer)
 
-(package! copilot
-  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+(package! minuet)
 
 (package! org-fragtog)
 
@@ -111,3 +110,9 @@
 (package! claude-code
   :recipe (:host github :repo "stevemolitor/claude-code.el"
            :files ("claude-code.el")))
+
+(package! gleam-ts-mode
+  :recipe (:host github
+           :repo "gleam-lang/gleam-mode"
+           :branch "main"
+           :files ("gleam-ts-*.el")))

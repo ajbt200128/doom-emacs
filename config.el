@@ -74,7 +74,6 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
-;; accept completion from copilot and fallback to company
 
 ;;
 ;; General settings
@@ -185,21 +184,96 @@
   (org-super-agenda-mode))
 
 
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("<tab>" . 'copilot-accept-completion)
-              ("TAB" . 'copilot-accept-completion)
-              ("C-n" . 'copilot-next-completion)
-              ("C-p" . 'copilot-previous-completion))
+;; show minuet suggestion after prompting for model choice, remember previous choices
+;; model options: claude-opus-4-7 claude-sonnet-4-6, haiku-4-5
+;; if opus is chosen, set minuet-claude-options max_tokens to 8192, and minuet-request-timeout to 60 and set minuet-n-completions to 1 minuet-context-window 128k
+;; 
+;; if sonnet is chosen, set minuet-claude-options max_tokens to 4096, and minuet-request-timeout to 30 and set minuet-n-completions to 2 minuet-context-window 64k
+;;
+;; if haiku is chosen, set minuet-claude-options max_tokens to 256, and minuet-request-timeout to 3 and set minuet-n-completions to 3 minuet-context-window 32k
+;; default back to haiku-4-5 with prev max_tokens request-timeout and n completions after completion is complete
+(defvar +minuet-model-history nil
+  "History of model choices for minuet completion.")
 
+(defun minuet-show-suggestion-with-model-choice-history ()
+  "Show minuet suggestion after prompting for model choice."
+  (interactive)
+  (let* ((models '("claude-opus-4-7" "claude-sonnet-4-6" "claude-haiku-4-5"))
+         (model (completing-read "Model: " models nil t nil '+minuet-model-history "claude-haiku-4-5"))
+         (orig-max-tokens (plist-get minuet-claude-options :max_tokens))
+         (orig-timeout minuet-request-timeout)
+         (orig-n-completions minuet-n-completions)
+         (orig-context-window minuet-context-window))
+    (cond
+     ((string= model "claude-opus-4-7")
+      (plist-put minuet-claude-options :max_tokens 8192)
+      (setq minuet-request-timeout 60)
+      (setq minuet-n-completions 1)
+      (setq minuet-context-window 128000))
+     ((string= model "claude-sonnet-4-6")
+      (plist-put minuet-claude-options :max_tokens 4096)
+      (setq minuet-request-timeout 30)
+      (setq minuet-n-completions 2)
+      (setq minuet-context-window 64000))
+     ((string= model "claude-haiku-4-5")
+      (plist-put minuet-claude-options :max_tokens 256)
+      (setq minuet-request-timeout 3)
+      (setq minuet-n-completions 3)
+      (setq minuet-context-window 32000)))
+    (plist-put minuet-claude-options :model model)
+    (unwind-protect
+        (minuet-show-suggestion)
+      (plist-put minuet-claude-options :model "claude-haiku-4-5")
+      (plist-put minuet-claude-options :max_tokens orig-max-tokens)
+      (setq minuet-request-timeout orig-timeout)
+      (setq minuet-n-completions orig-n-completions)
+      (setq minuet-context-window orig-context-window))))
+
+(use-package! minuet
+  :init
+  (add-hook 'prog-mode-hook #'minuet-auto-suggestion-mode)
   :config
-  (add-to-list 'copilot-indentation-alist '(tuareg-mode 2))
-  (add-to-list 'copilot-indentation-alist '(org-mode 2))
-  (add-to-list 'copilot-indentation-alist '(text-mode 2))
-  (add-to-list 'copilot-indentation-alist '(closure-mode 2))
-  (add-to-list 'copilot-indentation-alist '(emacs-lisp-mode 2)))
+  (setq minuet-provider 'claude)
+  (setq minuet-context-window 16000)
+  ;; read and set minuet-claude-options :system plist options :guidelines and :prompt from guidelines.md and prompt.md in this dir
+  (let ((dir (file-name-directory (or load-file-name buffer-file-name))))
+    (plist-put (plist-get minuet-claude-options :system) :guidelines
+               (with-temp-buffer
+                 (insert-file-contents (expand-file-name "guidelines.md" dir))
+                 (buffer-string)))
+    (plist-put (plist-get minuet-claude-options :system) :prompt
+               (with-temp-buffer
+                 (insert-file-contents (expand-file-name "prompt.md" dir))
+                 (buffer-string))))
+  (plist-put minuet-claude-options :model "claude-haiku-4-5")
+  (plist-put minuet-claude-options :max_tokens 256)
+  
+  ;; get anthropic api key from ~/.claude/settings.json api-key-helper
+  (plist-put minuet-claude-options :api-key (defun get-key () (let* ((json-file (expand-file-name "~/.claude/settings.json"))
+                                                                     (json-object-type 'plist)
+                                                                     (json-data (json-read-file json-file))
+                                                                     (helper (plist-get json-data :apiKeyHelper)))
+                                                                (string-trim (shell-command-to-string helper)))))
+  ;; set max tokens
 
+  :bind
+  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
+   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
+   ;; show suggest, select model first
+   ("M-I" . #'minuet-show-suggestion-with-model-choice-history)
+   :map minuet-active-mode-map
+   ;; regen with better model
+   ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
+   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
+   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
+   ("<tab>" . #'minuet-accept-suggestion) ;; accept whole completion
+   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
+   ;; Accept the first line of completion, or N lines with a numeric-prefix:
+   ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
+   ("M-a" . #'minuet-accept-suggestion-line)
+   ("M-e" . #'minuet-dismiss-suggestion)))
+
+;; 
 (use-package! vlf
   :config
   (setq vlf-application 'always)
@@ -219,6 +293,8 @@
    :desc "jinx-correct" :n "z =" #'jinx-correct
    :desc "jinx-correct-all" :n "z S" #'jinx-correct-all
    )
+  ;; Specify the dictionary you installed via Nix
+  (setq jinx-languages "en_US")
   )
 
 (use-package! magit-delta
@@ -383,6 +459,19 @@
   (setq claude-code-terminal-backend 'vterm)
                                         ; map claude-code-transient to SPC l
   (map! :leader :desc "Claude Code" "l" #'claude-code-transient))
+
+(use-package! gleam-ts-mode
+  :mode (rx ".gleam" eos))
+
+(after! treesit
+  (add-to-list 'auto-mode-alist '("\\.gleam$" . gleam-ts-mode)))
+
+(after! gleam-ts-mode
+  (unless (treesit-language-available-p 'gleam)
+    (gleam-ts-install-grammar)))
+
+;; gleam snippets
+
 
 (message "%s" (transient-get-suffix 'magit-submodule "f"))
 ;;
