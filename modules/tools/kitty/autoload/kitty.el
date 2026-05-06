@@ -69,13 +69,14 @@
                (kill-buffer errors)))))))
 
 ;;;###autoload
-(defun +kitty/run (command &optional noreturn)
+(defun +kitty/run (command &optional noreturn match)
   "Run COMMAND in kitty. If NORETURN is non-nil, send the commands as keypresses
-but do not execute them."
+but do not execute them. If MATCH is non-nil, target the window with that ID."
   (interactive
    (+kitty-completing-read "run:"))
   (add-to-list '+kitty-history command)
   (+kitty (concat "send-text "
+                  (when match (format "--match id:%d " match))
                   (shell-quote-argument command)
                   (unless noreturn "'\n'"))))
 
@@ -171,6 +172,51 @@ command."
   "Get all kitty windows."
   (json-parse-string (+kitty "ls")))
 
+(defun +kitty--flatten-windows ()
+  "Return a flat list of all kitty window objects."
+  (let (windows)
+    (seq-doseq (os-win (get-windows))
+      (seq-doseq (tab (gethash "tabs" os-win))
+        (seq-doseq (win (gethash "windows" tab))
+          (push win windows))))
+    (nreverse windows)))
+
+(defun +kitty--format-process (window)
+  "Return the name of the foreground process in WINDOW."
+  (let* ((procs (gethash "foreground_processes" window))
+         (first-proc (and (> (length procs) 0) (aref procs 0)))
+         (cmdline (and first-proc (gethash "cmdline" first-proc))))
+    (if (and cmdline (> (length cmdline) 0))
+        (file-name-nondirectory (aref cmdline 0))
+      "?")))
+
+(defun +kitty--select-window ()
+  "Prompt user to select a kitty window via consult. Returns window ID."
+  (let* ((windows (+kitty--flatten-windows))
+         (candidates
+          (mapcar
+           (lambda (win)
+             (let* ((id (gethash "id" win))
+                    (title (gethash "title" win))
+                    (cwd (gethash "cwd" win))
+                    (proc (+kitty--format-process win))
+                    (marker (if (and (gethash "is_active_window" win)
+                                     (gethash "is_focused" win))
+                                "* " "  "))
+                    (display (format "%s[%s] %s  %s"
+                                     marker proc title
+                                     (abbreviate-file-name cwd))))
+               (propertize display 'consult--candidate id)))
+           windows)))
+    (unless candidates
+      (user-error "No kitty windows found"))
+    (consult--read
+     candidates
+     :prompt "Kitty window: "
+     :sort nil
+     :require-match t
+     :lookup #'consult--lookup-candidate)))
+
 (defun pp-process (process)
   "Pretty print a process."
   (mapconcat #'identity (gethash "cmdline" process) " "))
@@ -213,7 +259,38 @@ command."
   (mapconcat #'pp-os-window (get-windows) "\n"))
 
 ;;;###autoload
-(defun +kitty/list-windows ()
-  "List all kitty windows."
+(defun +kitty/send-to-window ()
+  "Select a kitty window via consult, then send a command to it."
   (interactive)
-  (display-message-or-buffer (pp-windows)))
+  (let ((window-id (+kitty--select-window))
+        (command (car (+kitty-completing-read "send: "))))
+    (add-to-list '+kitty-history command)
+    (+kitty/run command nil window-id)))
+
+;;;###autoload
+(defun +kitty/send-region-to-window (beg end &optional noreturn)
+  "Select a kitty window via consult, then send the region to it."
+  (interactive (list (region-beginning)
+                     (region-end)
+                     current-prefix-arg))
+  (let ((window-id (+kitty--select-window)))
+    (+kitty/run (string-trim (buffer-substring-no-properties beg end))
+                noreturn window-id)))
+
+;;;###autoload
+(defun +kitty/send-region-to-window-with-message (beg end)
+  "Select a kitty window via consult, then send a message followed by the region to it."
+  (interactive (list (region-beginning)
+                     (region-end)))
+  (let* ((window-id (+kitty--select-window))
+         (message (car (+kitty-completing-read "prepend: ")))
+         (region (string-trim (buffer-substring-no-properties beg end)))
+         (command (concat message " " region)))
+    (add-to-list '+kitty-history command)
+    (+kitty/run command nil window-id)))
+
+;;;###autoload
+(defun +kitty/list-windows ()
+  "List all kitty windows via consult and send a command to the selected one."
+  (interactive)
+  (+kitty/send-to-window))

@@ -578,7 +578,10 @@
        :desc "Launch a new Kitty OS window" "O" #'+kitty/launch
        :desc "CD to a directory in Kitty" "c" #'+kitty/cd
        :desc "CD to current directory in Kitty" "d" #'+kitty/cd-to-here
-       :desc "CD to project root in Kitty" "p" #'+kitty/cd-to-project))
+       :desc "CD to project root in Kitty" "p" #'+kitty/cd-to-project
+       :desc "Send to a specific Kitty window" "w" #'+kitty/send-to-window
+       :desc "Send region to a specific Kitty window" "W" #'+kitty/send-region-to-window
+       :desc "Send region with message to Kitty window" "m" #'+kitty/send-region-to-window-with-message))
 
 ;; gpg
 (map! :leader :desc "Sign region" :n "S" #'gpg-sign-comment)
