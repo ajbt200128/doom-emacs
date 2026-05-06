@@ -273,7 +273,37 @@
    ("M-a" . #'minuet-accept-suggestion-line)
    ("M-e" . #'minuet-dismiss-suggestion)))
 
-;; 
+;; Modeline spinner while a minuet completion request is in flight.
+;; Stops as soon as the ghost-text overlay appears, even if more parallel
+;; requests are still resolving in the background.
+(after! minuet
+  (require 'spinner)
+  (defvar-local +minuet--spinner nil)
+  (defvar +minuet--mode-line-segment
+    '(:eval (when (bound-and-true-p +minuet--spinner)
+              (concat " ♪ " (spinner-print +minuet--spinner) " "))))
+  (put '+minuet--mode-line-segment 'risky-local-variable t)
+  (add-to-list 'mode-line-misc-info '+minuet--mode-line-segment t)
+
+  (defun +minuet--sync-spinner (active)
+    (cond
+     ((and active (not +minuet--spinner))
+      (setq-local +minuet--spinner (spinner-create 'progress-bar t))
+      (spinner-start +minuet--spinner))
+     ((and (not active) +minuet--spinner)
+      (spinner-stop +minuet--spinner)
+      (setq-local +minuet--spinner nil))))
+
+  (defun +minuet--watch-requests (_sym newval _op _where)
+    (+minuet--sync-spinner (and newval (not minuet--current-overlay))))
+
+  (defun +minuet--watch-overlay (_sym newval _op _where)
+    (+minuet--sync-spinner (and minuet--current-requests (not newval))))
+
+  (add-variable-watcher 'minuet--current-requests #'+minuet--watch-requests)
+  (add-variable-watcher 'minuet--current-overlay  #'+minuet--watch-overlay))
+
+;;
 (use-package! vlf
   :config
   (setq vlf-application 'always)
@@ -461,7 +491,11 @@
   (map! :leader :desc "Claude Code" "l" #'claude-code-transient))
 
 (use-package! gleam-ts-mode
-  :mode (rx ".gleam" eos))
+  :mode (rx ".gleam" eos)
+  :hook (gleam-ts-mode . eglot-ensure)
+  :config
+  (add-to-list 'eglot-server-programs
+               '(gleam-ts-mode . ("gleam" "lsp"))))
 
 (after! treesit
   (add-to-list 'auto-mode-alist '("\\.gleam$" . gleam-ts-mode)))
@@ -469,6 +503,25 @@
 (after! gleam-ts-mode
   (unless (treesit-language-available-p 'gleam)
     (gleam-ts-install-grammar)))
+
+;; gleam-ts-mode's queries hardcode `bit_string_*` node names, but on Emacs
+;; builds with libtree-sitter ABI >= 15 it installs the `main` grammar branch
+;; where those nodes were renamed `bit_array_*`. Rewrite both vars in place.
+;; See https://github.com/gleam-lang/gleam-mode/issues/61.
+(after! gleam-ts-mode
+  (cl-labels
+      ((rename (f)
+         (cond
+          ((and f (symbolp f)
+                (string-prefix-p "bit_string" (symbol-name f)))
+           (intern (concat "bit_array"
+                           (substring (symbol-name f) (length "bit_string")))))
+          ((stringp f) (replace-regexp-in-string "bit_string" "bit_array" f))
+          ((consp f) (cons (rename (car f)) (rename (cdr f))))
+          ((vectorp f) (apply #'vector (mapcar #'rename (append f nil))))
+          (t f))))
+    (setq gleam-ts--font-lock-settings (rename gleam-ts--font-lock-settings))
+    (setq gleam-ts--indent-rules (rename gleam-ts--indent-rules))))
 
 ;; gleam snippets
 
