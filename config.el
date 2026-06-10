@@ -257,21 +257,21 @@
   ;; set max tokens
 
   :bind
-  (("M-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
-   ("M-i" . #'minuet-show-suggestion) ;; use overlay for completion
+  (("C-y" . #'minuet-complete-with-minibuffer) ;; use minibuffer for completion
+   ("C-i" . #'minuet-show-suggestion) ;; use overlay for completion
    ;; show suggest, select model first
-   ("M-I" . #'minuet-show-suggestion-with-model-choice-history)
+   ("C-I" . #'minuet-show-suggestion-with-model-choice-history)
    :map minuet-active-mode-map
    ;; regen with better model
    ;; These keymaps activate only when a minuet suggestion is displayed in the current buffer
-   ("M-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
-   ("M-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
+   ("C-p" . #'minuet-previous-suggestion) ;; invoke completion or cycle to next completion
+   ("C-n" . #'minuet-next-suggestion) ;; invoke completion or cycle to previous completion
    ("<tab>" . #'minuet-accept-suggestion) ;; accept whole completion
-   ("M-A" . #'minuet-accept-suggestion) ;; accept whole completion
+   ("C-a" . #'minuet-accept-suggestion) ;; accept whole completion
    ;; Accept the first line of completion, or N lines with a numeric-prefix:
    ;; e.g. C-u 2 M-a will accepts 2 lines of completion.
-   ("M-a" . #'minuet-accept-suggestion-line)
-   ("M-e" . #'minuet-dismiss-suggestion)))
+   ("C-A" . #'minuet-accept-suggestion-line)
+   ("C-e" . #'minuet-dismiss-suggestion)))
 
 ;; Modeline spinner while a minuet completion request is in flight.
 ;; Stops as soon as the ghost-text overlay appears, even if more parallel
@@ -341,6 +341,10 @@
 (use-package! poetry
   :config
   (setq poetry-tracking-strategy 'projectile))
+
+(use-package! pet
+  :config
+  (add-hook 'python-base-mode-hook 'pet-mode -10))
 
 ;; TODO DAPE mode
 ;; (use-package! dap-mode
@@ -448,6 +452,8 @@
 (use-package! eglot-booster
   :after eglot
   :config
+  ;; bytecode read path doesn't utf-8-decode jsonrpc's unibyte buffer (Emacs 30.2); blahgeek/emacs-lsp-booster#43
+  (setq eglot-booster-io-only t)
   (eglot-booster-mode))
 
 
@@ -489,6 +495,10 @@
   (setq claude-code-terminal-backend 'vterm)
                                         ; map claude-code-transient to SPC l
   (map! :leader :desc "Claude Code" "l" #'claude-code-transient))
+
+;; Make Claude Code wait on files I have unsaved (queried live by its PreToolUse
+;; hook); just defines the query functions it calls over emacsclient.
+(load! "claude-lock")
 
 (use-package! gleam-ts-mode
   :mode (rx ".gleam" eos)

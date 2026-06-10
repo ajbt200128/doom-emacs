@@ -285,7 +285,7 @@ command."
   (let* ((window-id (+kitty--select-window))
          (message (car (+kitty-completing-read "prepend: ")))
          (region (string-trim (buffer-substring-no-properties beg end)))
-         (command (concat message " " region)))
+         (command (concat message "\n" region)))
     (add-to-list '+kitty-history command)
     (+kitty/run command nil window-id)))
 

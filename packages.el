@@ -107,6 +107,9 @@
 (package! inheritenv
   :recipe (:host github :repo "purcell/inheritenv"))
 
+(package! pet)
+(package! tomlparse)
+
 (package! claude-code
   :recipe (:host github :repo "stevemolitor/claude-code.el"
            :files ("claude-code.el")))
